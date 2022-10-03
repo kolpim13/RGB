@@ -6,10 +6,10 @@
 ; out pins: select [A - D]
 
 .wrap_target
-    out pins, 4     side 0x02 [0] ; Assert(active) OE pin folloved by row selection. Automatically stalls if no data
-    nop             side 0x03 [0] ; Latch drive high
-    nop             side 0x02 [0] ; And low
-    nop             side 0x00 [1] ; De-assert OE and wait some time
+    wait 1 irq 7    side 0x00 [0]   ; Wait for sync flag
+    out pins, 4     side 0x02 [7]   ; Assert(active) OE pin folloved by row selection. Automatically stalls if no data
+    nop             side 0x03 [7]   ; Latch drive high
+    irq nowait 6    side 0x00 [0]   ; Set sync flag for data flow (should be on the very bottom?)
 .wrap
 
 % c-sdk {
@@ -57,9 +57,13 @@ static inline void hub75_row_program_init(PIO pio, uint sm, uint offset, uint pi
 .side_set 1 
 
 .wrap_target
-    out pins, 6     side 0x00
-    nop             side 0x01  
-    nop             side 0x00  
+public loop:
+    out pins, 6     side 0x00   ; Data out
+    nop             side 0x01   ; SCKL assert
+    jmp !osre loop  side 0x00   ; SCKL deassert. If there is data present in buffer, continue transfer
+
+    irq nowait 7    side 0x00   ; Set flag "1" for row selection block
+    wait 1 irq 6    side 0x00   ; Wait for flag "0" to sync processes
 .wrap
 
 % c-sdk {

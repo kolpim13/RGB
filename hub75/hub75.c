@@ -10,15 +10,20 @@ static uint8_t hub75_buffer1[2048];
 void hub75_init(){
     // Fill buffer1 with full white color
     for (uint32_t i = 0; i < 2048; i++){
-        hub75_buffer1[i] = RGB111_WHITE | RGB111_WHITE << 3;
+        if (i % 2 == 0){
+            hub75_buffer1[i] = RGB111_WHITE | RGB111_WHITE << 3;
+        }
+        else{
+            hub75_buffer1[i] = RGB111_BLACK | RGB111_BLACK << 3;
+        }
     }
 
     // Set up pio state machine
         // Data transfer
-    uint sm_rgb111 = 0;
-    pio_sm_claim(pio0, sm_rgb111);
+    uint sm_data = 0;
+    pio_sm_claim(pio0, sm_data);
     uint offset_rgb111 = pio_add_program(pio0, &hub75_data_rgb111_program);
-    hub75_data_rgb111_program_init(pio0, sm_rgb111, offset_rgb111, 0, 6, 1000000.0);    // [0-5] - data, 6 - clk
+    hub75_data_rgb111_program_init(pio0, sm_data, offset_rgb111, 0, 6, 1000000.0);    // [0-5] - data, 6 - clk
 
         // Row selection
     uint sm_row = 1;
@@ -81,7 +86,7 @@ void hub75_init(){
 //===============================================================
 
 void hub75_data_dma_handler(void){
-    static uint8_t row[] = { 0 };
+    static uint8_t row[1] = { 255 };
     
     // Clr intr request
     dma_hw->ints0 = 1u << dma_channel_rgb111_data;
@@ -94,8 +99,6 @@ void hub75_data_dma_handler(void){
 
     // Send row number
     dma_channel_transfer_from_buffer_now(dma_channel_rgb111_row, &row[0], 1);
-
-   //dma_channel_transfer_from_buffer_now(dma_channel_rgb111_data, &hub75_buffer1[0], 8);
 }
 
 void hub75_row_dma_handler(void){
