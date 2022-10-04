@@ -13,5 +13,4 @@ static const uint dma_channel_rgb111_row = DREQ_PIO0_TX1;
 // Function definitions
 void hub75_init(void);
 void hub75_data_dma_handler(void);
-void hub75_row_dma_handler(void);
 //===============================================================
