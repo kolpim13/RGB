@@ -6,19 +6,10 @@ static uint32_t hub75_rgb111_buffer_rows = 32;
 static uint32_t hub75_rgb111_buffer_columns = 128;
 static uint8_t* hub75_rgb111_buffer0;
 static uint8_t* hub75_rgb111_buffer1;
+static size_t hub75_rgb111_activeBuffer = 0;
 //===============================================================
 
 void hub75_rgb111_init(){
-    // Fill buffer1 with full white color
-    for (uint32_t i = 0; i < 2048; i++){
-        if (i % 2 == 0){ 
-            hub75_rgb111_buffer1[i] = RGB111_WHITE | RGB111_WHITE << 3;
-        }
-        else{
-            hub75_rgb111_buffer1[i] = RGB111_BLACK | RGB111_BLACK << 3;
-        }
-    }
-
     // Set up pio state machine
         // Data transfer
     uint sm_data = 0;
@@ -48,19 +39,30 @@ void hub75_rgb111_init(){
         1,                          // Transfer count
         false                       // Start right now
     );
-
-        // Enable irq for choosen dma_rgb111_data channel
-    dma_channel_set_irq0_enabled(dma_channel_rgb111_data, true);
-
-        // Enable irq
-    irq_set_exclusive_handler(DMA_IRQ_0, hub75_rgb111_data_dma_handler);
-    irq_set_enabled(DMA_IRQ_0, true);    
-
-    // Execute handler to run transaction sequence
-    hub75_data_dma_handler();
 }
 
-void hub75_rgb111_set_buffer(uint8_t* buf_pa, uint number){
+void hub75_rgb111_start(void){
+    // Enable channel for rgb111 interruption for DMA IRQ 0
+    dma_channel_set_irq0_enabled(dma_channel_rgb111_data, true);
+
+    // Execute handler to run transaction sequence
+    hub75_rgb111_data_dma_handler();
+}
+
+void hub75_rgb111_stop(void){
+    // Disable channel for rgb111 interruption on DMA IRQ 0
+    dma_channel_set_irq0_enabled(dma_channel_rgb111_data, false);
+    // Abort channel
+    dma_channel_abort(dma_channel_rgb111_data);
+    // Clear the spurious (maybe there will be one)
+    dma_channel_acknowledge_irq0(dma_channel_rgb111_data);
+    // Now channel is ready to be re-enabled ...
+}
+//===============================================================
+
+/* GET & SET */
+
+inline void hub75_rgb111_set_buffer(uint8_t *buf_pa, uint number){
     if (number == 0){
         hub75_rgb111_buffer0 = buf_pa;
     }
@@ -71,16 +73,35 @@ void hub75_rgb111_set_buffer(uint8_t* buf_pa, uint number){
         return;
     }
 }
+inline uint8_t* hub75_rgb111_get_buffer(uint number){
+    if (number == 0){
+        return hub75_rgb111_buffer0;
+    }
+    else if (number == 1){
+        return hub75_rgb111_buffer1;
+    }
+    else{
+        return NULL;
+    }
+}
+inline size_t hub75_rgb111_get_activeBufferNumber(void){
+    return hub75_rgb111_activeBuffer;
+}
 //===============================================================
 
 void hub75_rgb111_data_dma_handler(void){
     static uint8_t row = 255 ;
+
+    // Check if event was
+    /*if ((dma_hw->ints0 & (1u << dma_channel_rgb111_data)) == 0){
+        return;
+    }*/
     
     // Clr intr request
     dma_hw->ints0 = 1u << dma_channel_rgb111_data;
 
     // Start transfer of data from the current row
-    dma_channel_transfer_from_buffer_now(dma_channel_rgb111_data, &hub75_rgb111_buffer1[0], 128);
+    dma_channel_transfer_from_buffer_now(dma_channel_rgb111_data, &hub75_rgb111_buffer1[hub75_rgb111_activeBuffer], 128);
 
     // Send correct row number
     row++;

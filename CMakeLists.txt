@@ -21,11 +21,15 @@ add_executable(${PROJECT_NAME}
 target_include_directories(RGB 
         PUBLIC hub75
         colors
+        core
+        RIOmini
 )
 
 # Add sources
 target_sources(RGB 
-        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/hub75/hub75.c
+        PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/hub75/hub75.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/core_pico.c
 )
 
 # For pio programs 
@@ -33,7 +37,8 @@ pico_generate_pio_header(RGB ${CMAKE_CURRENT_LIST_DIR}/hub75/hub75.pio)
 
 # Pull in our pico_stdlib which pulls in commonly used features (gpio, timer-delay etc)
 target_link_libraries(${PROJECT_NAME}
-        PUBLIC  pico_stdlib
+        PUBLIC  
+        pico_stdlib
         hardware_gpio
         hardware_pio
         hardware_clocks
