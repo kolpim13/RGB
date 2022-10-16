@@ -21,7 +21,7 @@ void hub75_rgb111_init(){
     uint sm_row = 1;
     pio_sm_claim(pio0, sm_row);
     uint offset_row = pio_add_program(pio0, &hub75_row_program);
-    hub75_row_program_init(pio0, sm_row, offset_row, 10, 14, 1000000.0);    // [0-5] - data, 6 - clk
+    hub75_row_program_init(pio0, sm_row, offset_row, 10, 14, 1000000.0);    // [10 - 13] - row selection, [14 - 15] - Latch, OE
 
     // DMA rgb111 data transfer
     dma_channel_claim(dma_channel_rgb111_data);
@@ -49,6 +49,7 @@ void hub75_rgb111_start(void){
     hub75_rgb111_data_dma_handler();
 }
 
+// Doesnt work yet
 void hub75_rgb111_stop(void){
     // Disable channel for rgb111 interruption on DMA IRQ 0
     dma_channel_set_irq0_enabled(dma_channel_rgb111_data, false);
@@ -91,23 +92,18 @@ inline size_t hub75_rgb111_get_activeBufferNumber(void){
 
 void hub75_rgb111_data_dma_handler(void){
     static uint8_t row = 255 ;
-
-    // Check if event was
-    /*if ((dma_hw->ints0 & (1u << dma_channel_rgb111_data)) == 0){
-        return;
-    }*/
     
     // Clr intr request
     dma_hw->ints0 = 1u << dma_channel_rgb111_data;
-
-    // Start transfer of data from the current row
-    dma_channel_transfer_from_buffer_now(dma_channel_rgb111_data, &hub75_rgb111_buffer1[hub75_rgb111_activeBuffer], 128);
 
     // Send correct row number
     row++;
     if (row > 15){
         row = 0;
     }
+
+    // Start transfer of data from the current row
+    dma_channel_transfer_from_buffer_now(dma_channel_rgb111_data, &hub75_rgb111_buffer0[row * 128], 128);
 
     // Send row number
     pio_sm_put_blocking(pio0, 1, row);

@@ -8,6 +8,7 @@ include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 project(RGB C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_BUILD_TYPE Debug)
 
 # Creates a pico-sdk subdirectory in our project for the libraries
 pico_sdk_init()
@@ -23,6 +24,7 @@ target_include_directories(RGB
         colors
         core
         RIOmini
+        uart
 )
 
 # Add sources
@@ -30,6 +32,7 @@ target_sources(RGB
         PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/hub75/hub75.c
         ${CMAKE_CURRENT_SOURCE_DIR}/core/core_pico.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/uart/uart.c
 )
 
 # For pio programs 
@@ -37,13 +40,14 @@ pico_generate_pio_header(RGB ${CMAKE_CURRENT_LIST_DIR}/hub75/hub75.pio)
 
 # Pull in our pico_stdlib which pulls in commonly used features (gpio, timer-delay etc)
 target_link_libraries(${PROJECT_NAME}
-        PUBLIC  
+        PUBLIC 
         pico_stdlib
         hardware_gpio
         hardware_pio
         hardware_clocks
         hardware_dma
         hardware_irq
+        hardware_uart
 )
 
 # create map/bin/hex/uf2 files.

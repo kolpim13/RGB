@@ -56,6 +56,15 @@ static inline void hub75_row_program_init(PIO pio, uint sm, uint offset, uint pi
 .program hub75_data_rgb111
 .side_set 1 
 
+; Faster version of code
+;out pins, 6     side 0x01   ; Data out
+;jmp !osre loop  side 0x00   ; SCKL assert
+
+; This code is 150% slower, but maybe more proper. Tests are needed. (Heat and so on) 
+;out pins, 6     side 0x00   ; Data out
+;nop             side 0x01   ; SCKL assert
+;jmp !osre loop  side 0x00   ; SCKL deassert. If there is data present in buffer, continue transfer
+
 .wrap_target
 public loop:
     out pins, 6     side 0x00   ; Data out

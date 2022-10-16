@@ -16,12 +16,14 @@ int main() {
 
     // Fill the temporary buffer for test
     for (size_t i = 0; i < 2048; i++){
-        if (i % 2 == 0){
+        /*if (i % 2 == 0){
             temporary_a[i] = RGB111_WHITE | RGB111_WHITE << 3;
         }
         else{
             temporary_a[i] = RGB111_BLACK | RGB111_BLACK << 3;
-        }
+        }*/
+        //temporary_a[i] = RGB111_BLACK | (RGB111_BLACK << 3);
+        temporary_a[i] = RGB111_RED | (RGB111_CIAN << 3);
     }
     hub75_rgb111_set_buffer(temporary_a, 0);
     hub75_rgb111_init();
