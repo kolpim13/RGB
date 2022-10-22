@@ -2,6 +2,9 @@
     "files.associations": {
         "hub75.h": "c",
         "stdio.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "core_pico.h": "c",
+        "hub75_rgb555.h": "c",
+        "hub75.pio.h": "c"
     }
 }

@@ -16,6 +16,12 @@ void PICO_IRQ_Set_Handlers(void){
 /* ALL IRQ HANDLERS */
 
 void IRQ_Handler_DMA_0(void){
-    hub75_rgb111_data_dma_handler();
+     /* For time measuring (oscyloscop) start */ 
+    gpio_put(22, true);
+
+    hub75_rgb555_data_dma_handler();
+
+    /* For time measuring (oscyloscop) stop */
+    gpio_put(22, false);
 }
 //===============================================================

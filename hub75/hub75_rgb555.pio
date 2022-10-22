@@ -1,0 +1,154 @@
+; Program takes interrupts 6 and 7 by default
+
+.program hub75_row_rgb555
+.side_set 2
+
+; side pin 0: LATCH
+; side pin 1: OEn
+; out pins: select [A - D]
+
+.wrap_target
+    wait 1 irq 7    side 0x02   ; Wait for sync flag and deasert OEn
+    out pins, 4     side 0x02
+    out x, 28       side 0x03
+loop:
+    jmp x-- loop    side 0x00   ; Assert OEn for x+1 cycles
+    irq nowait 6    side 0x00
+.wrap
+
+% c-sdk {
+#include "hardware/gpio.h"
+#include "hardware/clocks.h"
+
+static inline void hub75_row_rgb555_program_init(PIO pio, uint sm, uint offset, uint pin_row, uint pin_side, float frequency){
+    // Create state machine config
+    pio_sm_config c = hub75_row_rgb555_program_get_default_config(offset);
+
+    // Frequency calculation
+    if (frequency < 2000) {
+        frequency = 2000;
+    }
+    float clock_divider = (float)clock_get_hz(clk_sys) / frequency;
+    sm_config_set_clkdiv(&c, clock_divider);
+
+    // Pins init (choose pio option on GPIO mux)
+    pio_gpio_init(pio, pin_row);
+    pio_gpio_init(pio, pin_row + 1);
+    pio_gpio_init(pio, pin_row + 2);
+    pio_gpio_init(pio, pin_row + 3);
+    pio_gpio_init(pio, pin_side);
+    pio_gpio_init(pio, pin_side + 1);
+
+    // Init output pins
+    sm_config_set_out_pins(&c, pin_row, 4);         // Row pins
+    sm_config_set_sideset_pins(&c, pin_side);       // Latch + OE pins
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_row, 4, true);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_side, 2, true);
+
+    // Add fifo for the rgb pins
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+
+    // Shift: right, autopull: true, pull_threshold: 32 bits [before autoreload]
+    sm_config_set_out_shift(&c, true, true, 32);
+
+    // Apply config and activate state machine
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+%}
+
+.program hub75_data_rgb555
+.side_set 1
+
+public entry_point:
+.wrap_target
+public shift0:
+    ; pull                side 0x00 ; Here should be encoded nop(0 bit) or bit shift instruction(1 to 4 bits)
+    ; in osr, 1           side 0x00 ; R0
+    ; out null, 5         side 0x00 ; "Shift on 5 next bits"
+    ; in osr, 1           side 0x00 ; G0
+    ; out null, 5         side 0x00
+    ; in osr, 1           side 0x00 ; B0
+    ; out null, 5         side 0x00
+    ; in osr, 1           side 0x00 ; R1
+    ; out null, 5         side 0x01
+    ; in osr, 1           side 0x01 ; G1
+    ; out null, 5         side 0x01
+    ; in osr, 1           side 0x01 ; B1
+    ; out null, 32        side 0x01 ; Discard buffer osr data. To free space for the next 2 pixels
+    ; in null, 26         side 0x01
+    ; mov pins, ::isr     side 0x01 ; Push data to the display
+    ; jmp !osre shift0    side 0x01 ; start loop again
+    ; irq nowait 7        side 0x00 ; sync with row selection program  
+    ; wait 1 irq 6        side 0x00
+    
+    nop                 side 0x01
+    
+
+    ; Works
+    ; out null, 5         side 0x01
+    ; out pins, 1         side 0x01
+    ; out null, 32        side 0x00
+
+    ; Works
+    ; nop                 side 0x01
+    ; out pins, 6         side 0x01
+    ; out null, 32        side 0x01
+.wrap
+
+% c-sdk {
+#include "hardware/gpio.h"
+#include "hardware/clocks.h"
+
+static inline void hub75_data_rgb555_program_init(PIO pio, uint sm, uint offset, uint pin_data, uint pin_side, float frequency){
+    // Create state machine config
+    pio_sm_config c = hub75_row_rgb555_program_get_default_config(offset);
+
+    // Frequency calculation
+    if (frequency < 2000) {
+        frequency = 2000;
+    }
+    float clock_divider = (float)clock_get_hz(clk_sys) / frequency;
+    sm_config_set_clkdiv(&c, clock_divider);
+
+    // Pins init (choose pio option on GPIO mux)
+    pio_gpio_init(pio, pin_data);
+    pio_gpio_init(pio, pin_data + 1);
+    pio_gpio_init(pio, pin_data + 2);
+    pio_gpio_init(pio, pin_data + 3);
+    pio_gpio_init(pio, pin_data + 4);
+    pio_gpio_init(pio, pin_data + 5);
+    pio_gpio_init(pio, pin_side);
+
+    // Init output pins
+    sm_config_set_out_pins(&c, pin_data, 6);        // Data pins
+    sm_config_set_sideset_pins(&c, pin_side);       // Sckl pin
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_data, 6, true);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_side, 1, true);
+
+    // Add fifo for the rgb pins
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+
+    // Shift: right, autopull: true, pull_threshold: 32 bits [before autoreload]
+    sm_config_set_out_shift(&c, true, true, 32);
+    // Shift: left, autopull: false, pull_threshold: 32 bits [no autoreload]
+    sm_config_set_in_shift(&c, false, false, 32);
+
+    // Apply config and activate state machine
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_exec(pio, sm, offset + hub75_data_rgb555_offset_entry_point);
+    pio_sm_set_enabled(pio, sm, true);
+}
+
+static inline void hub75_data_rgb555_set_shift(PIO pio, uint sm, uint offset, uint shamt){
+    uint16_t instr;
+    if (shamt == 0){
+        instr = pio_encode_nop();
+    }
+    else{
+        instr = pio_encode_out(pio_null, shamt);
+    }
+    pio->instr_mem[offset + hub75_data_rgb555_offset_shift0] = instr;
+}
+
+%}
