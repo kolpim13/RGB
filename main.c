@@ -7,6 +7,7 @@
 
 // 2 pixels in one uint32 word (32 * 64 : 2 = 1024 words)
 static uint32_t temporary_a[1024];
+static uint8_t temp_rgb111_a[1024];
 
 int main() {
     // For diod
@@ -41,17 +42,22 @@ int main() {
         }
         red += 4;
         */
-       /* Test */
-       if (i < 1024){
+        /* Test */
+        if (i < 1024){
             temporary_a[i] = 1 | (1 << 5);
         }
         else{
             temporary_a[i - 1024] = 1 | (1 << 5);
         }
     }
+    //hub75_rgb555_set_buffer(temporary_a, 0);
+    //hub75_rgb555_init(pio0, 0, 1, 0, 6, 10, 14, 1000000.0);
 
-    hub75_rgb555_set_buffer(temporary_a, 0);
-    hub75_rgb555_init(pio0, 0, 1, 0, 6, 10, 14, 1000000.0);
+    for (size_t i = 0; i < 1024; i++){
+        temp_rgb111_a[i] = RGB111_BLUE | (RGB111_YELLOW << 3);
+    }
+    hub75_rgb111_set_buffer(temp_rgb111_a, 0);
+    hub75_rgb111_init(pio0, 0, 1, 0, 6, 10, 14, 1000000.0);
 
     for(;;){
         // To be sure chip works in normal mode

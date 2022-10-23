@@ -13,8 +13,8 @@ static size_t hub75_rgb555_buffer_columns = 64;
 static uint32_t* hub75_rgb555_buffer0_p;
 static uint32_t* hub75_rgb555_buffer1_p;
 
-static size_t hub75_rgb555_row = 0;
-static size_t hub75_rgb555_shift = 0;
+static uint32_t hub75_rgb555_row = 0;
+static uint32_t hub75_rgb555_shift = 0;
 
 void hub75_rgb555_init(PIO pio, uint sm_data, uint sm_row, uint pin_color, uint pin_sckl, uint pin_row, uint pin_latch, float freq){
     hub75_rgb555_pio = pio;
@@ -34,7 +34,7 @@ void hub75_rgb555_init(PIO pio, uint sm_data, uint sm_row, uint pin_color, uint 
     // DMA channel configure
     dma_channel_claim(dma_channel_rgb555_data);
     dma_channel_config c_data = dma_channel_get_default_config(dma_channel_rgb555_data);
-    channel_config_set_transfer_data_size(&c_data, DMA_SIZE_8);
+    channel_config_set_transfer_data_size(&c_data, DMA_SIZE_32);
     channel_config_set_read_increment(&c_data, true);
     channel_config_set_write_increment(&c_data, false);
     channel_config_set_dreq(&c_data, dma_channel_rgb555_data);
