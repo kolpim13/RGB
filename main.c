@@ -6,14 +6,13 @@
 #include "colorRGB111.h"
 #include "uart.h"
 
-#define LED_PICO    25
-#define LED_PICO_W  0
-#define LED LED_PICO
-
 int main() {
     // For diod
     gpio_init(LED);
     gpio_set_dir(LED, GPIO_OUT);
+
+    gpio_init(LED_OSCYLOSCOP);
+    gpio_set_dir(LED_OSCYLOSCOP, GPIO_OUT);
 
     UART_init(115200);
     UART_readAsync();

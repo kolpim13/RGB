@@ -41,16 +41,18 @@ static void UART_init_dma(void){
 void UART_init(uint32_t baud){
     gpio_set_function(UART_PIN_TX, GPIO_FUNC_UART);
     gpio_set_function(UART_PIN_RX, GPIO_FUNC_UART);
+    //gpio_set_function(UART_PIN_RTS, GPIO_FUNC)
 
     uart_init(UART, baud);
+    //uart_set_hw_flow(UART, false, true);
     UART_init_dma();
 
     /* Disable FIFO mode and receiver */
-    //UART_HW->lcr_h &= ~(UART_UARTLCR_H_FEN_BITS);
+    UART_HW->lcr_h &= ~(UART_UARTLCR_H_FEN_BITS);
     UART_HW->cr &= ~(UART_UARTCR_RXE_BITS);
 
-    /* Interrupts: Receive, Receive timeout */
-    UART_HW->imsc |= (UART_UARTIMSC_RXIM_BITS | UART_UARTIMSC_RTIM_BITS);
+    /* Interrupts: Receive */
+    UART_HW->imsc |= UART_UARTIMSC_RXIM_BITS;
     irq_set_exclusive_handler(UART0_IRQ, (irq_handler_t)UART_IRQ_Handler);
     irq_set_enabled(UART0_IRQ, true);
 }
@@ -77,22 +79,21 @@ __always_inline uint8_t* UART_ReceiveBuffer_Get(void) { return &buffer_a[0]; }
 __always_inline uint32_t UART_ReceiveBufferLen_Get(void) { return len_u32; }
 
 void UART_IRQ_Handler(void){
-    /* If receive timeout interrupt */
+    /* Read interrupt mask */
     uint32_t mis = UART_HW->mis;
-    if (mis & UART_UARTMIS_RTMIS_BITS){
-        UART_HW->cr &= ~(UART_UARTCR_RXE_BITS);
-        UART_RX_State_Set(TX_RX_Ready);
-
-        UART_HW->icr |= UART_UARTICR_RTIC_BITS;
-        return;
-    }
 
     /* If byte receive */
     if (mis & UART_UARTMIS_RXMIS_BITS){
+        uint8_t symb = UART_HW->dr;
+
+        // If 
+        if (symb == UART_SYMB_END_OF_MES){
+            UART_HW->cr &= ~(UART_UARTCR_RXE_BITS);
+            UART_RX_State_Set(TX_RX_Ready);
+            return;
+        }
         buffer_a[len_u32] = UART_HW->dr;
         len_u32++;
-
-        UART_HW->icr |= UART_UARTICR_RXIC_BITS;
     }
 }
 void UART_TX_DMA_Handler(void){}

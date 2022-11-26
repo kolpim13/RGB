@@ -1,3 +1,28 @@
+/* UART module general description
+ * This uart is used only for communication with PC [high level program] using dedicated protocol. No general purpose.
+ It means that if it possible to win performance with the cost of flexibility it is need to be done.
+ Transfer is performed via dma.
+ Receive implemented based on irq on every single byte. End of mes - special character
+ 
+ * Settings:
+ 1. FIFO mode is disabled 
+
+ * Performance:
+ Transfer provide no additional affords except of start and stop sequence
+ Receiving of one byte is about 250 ns.
+
+ ! Discovered HW problems:
+ 1. while dma on receive is working, it is impossible to trigger related uart irq.
+ This fact leads to situation where it is impossible to spot end of dma transfer by timeout after last character.
+
+ TODO:
+ 1. Add uart errors detection and corresponding reaction of the module on them.
+ 2. Try to implement FIFO mode for receiving data.  
+    ? timeout interrupt - end of mes, receive interrupt - another part of the mes.
+    Use RTS signal!
+    Calculate performance and compare it to the current method.
+*/
+
 #pragma once
 
 #include "core_pico.h"
@@ -6,7 +31,10 @@
 #define UART_HW         uart0_hw
 #define UART_PIN_TX     16U
 #define UART_PIN_RX     17U
+#define UART_PIN_RTS    18U
 #define UART_RX_LEN     4096
+
+#define UART_SYMB_END_OF_MES    0xFF
 
 /*
  * All possible states for uart transmitter and receiver.
