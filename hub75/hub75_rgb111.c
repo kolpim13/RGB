@@ -34,15 +34,15 @@ void hub75_rgb111_init(PIO pio, uint sm_data, uint sm_row, uint pin_color, uint 
     hub75_row_rgb111_program_init(pio0, sm_row, hub75_rgb111_offset_row, pin_row, pin_latch, freq);
 
     // DMA rgb111 data transfer
-    dma_channel_claim(dma_channel_rgb111_data);
-    dma_channel_config c_data = dma_channel_get_default_config(dma_channel_rgb111_data);   // default configs
+    dma_channel_claim(DMA_CHANNEL_RGB111_DATA);
+    dma_channel_config c_data = dma_channel_get_default_config(DMA_CHANNEL_RGB111_DATA);   // default configs
     channel_config_set_transfer_data_size(&c_data, DMA_SIZE_8);
     channel_config_set_read_increment(&c_data, true);
     channel_config_set_write_increment(&c_data, false);
-    channel_config_set_dreq(&c_data, dma_channel_rgb111_data);
+    channel_config_set_dreq(&c_data, DMA_CHANNEL_RGB111_DATA);
     
     dma_channel_configure(
-        dma_channel_rgb111_data,    // Number of dma_rgb111 channel
+        DMA_CHANNEL_RGB111_DATA,    // Number of dma_rgb111 channel
         &c_data,                    // Сonfig
         &pio0_hw->txf[0],           // Write address
         NULL,                       // Read address
@@ -51,7 +51,7 @@ void hub75_rgb111_init(PIO pio, uint sm_data, uint sm_row, uint pin_color, uint 
     );
 
      // Enable channel for rgb111 interruption for DMA IRQ 0
-    dma_channel_set_irq0_enabled(dma_channel_rgb111_data, true);
+    dma_channel_set_irq0_enabled(DMA_CHANNEL_RGB111_DATA, true);
 
     // Execute handler to run transaction sequence
     hub75_rgb111_data_dma_handler();
@@ -68,20 +68,23 @@ void hub75_rgb111_set_buffer(uint8_t *buf_pa, uint number){
         return;
     }
 }
+uint8_t* hub75_rgb111_get_buffer(void){
+    return hub75_rgb111_buffer0_p;
+}
+
 void hub75_rgb111_data_dma_handler(void){
     // Clr intr request
-    dma_hw->ints0 = 1u << dma_channel_rgb111_data;
+    dma_hw->ints0 = 1u << DMA_CHANNEL_RGB111_DATA;
 
     // Send row number
     pio_sm_put_blocking(hub75_rgb111_pio, hub75_rgb111_sm_row, hub75_rgb555_row);
 
+    // Start transfer of data from the current row
+    dma_channel_transfer_from_buffer_now(DMA_CHANNEL_RGB111_DATA, &hub75_rgb111_buffer0_p[hub75_rgb555_row * hub75_rgb111_columns], hub75_rgb111_columns);
+
     // Row 
+    hub75_rgb555_row++;
     if (hub75_rgb555_row >= hub75_rgb111_rows_half){
         hub75_rgb555_row = 0;
     }
-
-    // Start transfer of data from the current row
-    dma_channel_transfer_from_buffer_now(dma_channel_rgb111_data, &hub75_rgb111_buffer0_p[hub75_rgb555_row * hub75_rgb111_columns], hub75_rgb111_columns);
-
-    hub75_rgb555_row++;
 }

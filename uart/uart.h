@@ -21,6 +21,7 @@
     ? timeout interrupt - end of mes, receive interrupt - another part of the mes.
     Use RTS signal!
     Calculate performance and compare it to the current method.
+ 3. Add TX_RX_State that would indicate someone is working with resources, but no transfer or receiving data.
 */
 
 #pragma once
@@ -85,3 +86,9 @@ uint32_t UART_ReceiveBufferLen_Get(void);
  * Method to manage irq events
 */
 void UART_IRQ_Handler(void);
+
+/* UART_TX_DMA_Handler
+ * Method to observe and manage TX transfer state. 
+ End of transfer, errors, etc.
+*/
+void UART_TX_DMA_Handler(void);

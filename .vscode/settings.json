@@ -5,7 +5,8 @@
         "stdlib.h": "c",
         "core_pico.h": "c",
         "hub75_rgb555.h": "c",
-        "hub75.pio.h": "c"
+        "hub75.pio.h": "c",
+        "uds_2e.h": "c"
     },
 
     // These settings tweaks to the cmake plugin will ensure

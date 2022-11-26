@@ -20,6 +20,8 @@ static void UART_init_dma(void){
     dma_channel_set_write_addr(DMA_CHANEL_UART0_TX, &UART_HW->dr, false);
     dma_channel_set_config(DMA_CHANEL_UART0_TX, &config_tx, false);
 
+    dma_channel_set_irq0_enabled(DMA_CHANEL_UART0_TX, true);
+
     /*
     // RX initial channel
     dma_channel_config config_rx_init = {0};
@@ -96,4 +98,8 @@ void UART_IRQ_Handler(void){
         len_u32++;
     }
 }
-void UART_TX_DMA_Handler(void){}
+void UART_TX_DMA_Handler(void){
+    UART_TX_State_Set(TX_RX_Ready);
+
+    dma_hw->ints0 |= (1U << DMA_CHANEL_UART0_TX);
+}

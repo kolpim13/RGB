@@ -25,6 +25,7 @@ target_include_directories(RGB
         core
         RIOmini
         uart
+        uds
 )
 
 # Add sources
@@ -34,6 +35,8 @@ target_sources(RGB
         ${CMAKE_CURRENT_SOURCE_DIR}/hub75/hub75_rgb555.c
         ${CMAKE_CURRENT_SOURCE_DIR}/core/core_pico.c
         ${CMAKE_CURRENT_SOURCE_DIR}/uart/uart.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/uds/uds.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/uds/uds_2e.c
 )
 
 # For pio programs
