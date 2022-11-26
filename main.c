@@ -18,10 +18,6 @@ int main() {
     UART_readAsync();
     
     for(;;){
-        if (UART_RX_State_Get() == TX_RX_Ready){
-            UART_transferAsync("Mo", 2);
-            UART_readAsync();
-        }
-        //sleep_ms(5000);
+        
     }
 }
