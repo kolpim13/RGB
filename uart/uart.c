@@ -9,7 +9,7 @@ static volatile UART_TX_RX_State_e status_rx = TX_RX_Ready;
 
 static void UART_init_dma(void){
     // TX
-    dma_channel_config config_tx = {0};
+    dma_channel_config config_tx = { 0 };
     dma_channel_claim(DMA_CHANEL_UART0_TX);
     channel_config_set_read_increment(&config_tx, true);
     channel_config_set_write_increment(&config_tx, false);
@@ -101,5 +101,5 @@ void UART_IRQ_Handler(void){
 void UART_TX_DMA_Handler(void){
     UART_TX_State_Set(TX_RX_Ready);
 
-    dma_hw->ints0 |= (1U << DMA_CHANEL_UART0_TX);
+    dma_hw->ints0 |= (1u << DMA_CHANEL_UART0_TX);
 }
