@@ -26,6 +26,7 @@ target_include_directories(RGB
         RIOmini
         uart
         uds
+        usb
 )
 
 # Add sources
@@ -37,6 +38,7 @@ target_sources(RGB
         ${CMAKE_CURRENT_SOURCE_DIR}/uart/uart.c
         ${CMAKE_CURRENT_SOURCE_DIR}/uds/uds.c
         ${CMAKE_CURRENT_SOURCE_DIR}/uds/uds_2e.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/usb/usb_descriptors.c
 )
 
 # For pio programs
@@ -47,6 +49,8 @@ pico_generate_pio_header(RGB ${CMAKE_CURRENT_LIST_DIR}/hub75/hub75_rgb555.pio)
 target_link_libraries(${PROJECT_NAME}
         PUBLIC 
         pico_stdlib
+        tinyusb_device
+        tinyusb_board
         hardware_gpio
         hardware_pio
         hardware_clocks
@@ -58,5 +62,5 @@ target_link_libraries(${PROJECT_NAME}
 # create map/bin/hex/uf2 files.
 pico_add_extra_outputs(${PROJECT_NAME})
 
-pico_enable_stdio_usb(${PROJECT_NAME} 0)
-pico_enable_stdio_uart(${PROJECT_NAME} 1)
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 0)

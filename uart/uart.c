@@ -3,7 +3,7 @@
 #include "hardware/dma.h"
 
 static volatile uint32_t len_u32 = 0;
-static uint8_t buffer_a[UART_RX_LEN] __attribute__ ((aligned (4)));
+static volatile uint8_t buffer_a[UART_RX_LEN] __attribute__ ((aligned (4)));
 static volatile UART_TX_RX_State_e status_tx = TX_RX_Ready;
 static volatile UART_TX_RX_State_e status_rx = TX_RX_Ready;
 

@@ -75,6 +75,10 @@ void hub75_rgb111_data_dma_handler(void){
     pio_sm_put_blocking(hub75_rgb111_pio, hub75_rgb111_sm_row, hub75_rgb111_row);
 
     // Start transfer of data from the current row
+    /* Temp beg */
+    /* Temp end */
+    
+    /* Normal */
     dma_channel_transfer_from_buffer_now(DMA_CHANNEL_RGB111_DATA, &hub75_rgb111_buffer0_p[hub75_rgb111_row * hub75_rgb111_columns], hub75_rgb111_columns);
 
     // Row 
