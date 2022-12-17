@@ -9,17 +9,23 @@
 
 static void cdc_task(void);
 
+volatile uint8_t rgb111_a[1024];
+
 int main() {
     // For diod
     gpio_init(LED);
     gpio_set_dir(LED, GPIO_OUT);
 
-    //board_init();     // Dont have to be here
+    PICO_IRQ_Set_Handlers();
+
+    hub75_rgb111_set_buffer(rgb111_a, 0);
+    hub75_rgb111_init(pio0, 0, 1, 2, 8, 10, 14, 1000000.0);
+
     tusb_init();
     
     for(;;){
         tud_task();
-        cdc_task();
+        UDS_Manage();
     }
 }
 

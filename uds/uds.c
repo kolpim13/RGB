@@ -1,11 +1,14 @@
 #include "uds.h"
 
 #include "uart.h"
+#include "tusb.h"
 
 static uint8_t buffer_a[4096];
 static uint32_t buffer_len_u32 = 0;
 
 void UDS_Manage(void){
+
+    /*
     if (UART_RX_State_Get() == TX_RX_Ready){
         uint8_t* mes_pa = UART_ReceiveBuffer_Get();
         uint32_t len_u32 = UART_ReceiveBufferLen_Get();
@@ -14,6 +17,13 @@ void UDS_Manage(void){
         while(UART_TX_State_Get() != TX_RX_Ready);
         UART_transferAsync(buffer_a, buffer_len_u32);
         UART_readAsync();
+    }
+    */
+
+    if (tud_cdc_n_available(TUD_UDS)){
+        uint8_t mes_pa[1024]; 
+        uint32_t len_u32 = tud_cdc_n_read(TUD_UDS, mes_pa, sizeof(mes_pa));
+        UDS_Process(mes_pa, len_u32);
     }
 }
 
