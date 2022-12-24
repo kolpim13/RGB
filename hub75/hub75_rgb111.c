@@ -68,6 +68,8 @@ uint8_t* hub75_rgb111_get_buffer(void){
 }
 
 void hub75_rgb111_data_dma_handler(void){
+    #define ROW_BEG 4
+
     // Clr intr request
     dma_hw->ints0 |= (1u << DMA_CHANNEL_RGB111_DATA);
 
@@ -76,14 +78,17 @@ void hub75_rgb111_data_dma_handler(void){
 
     // Start transfer of data from the current row
     /* Temp beg */
+    uint32_t row = hub75_rgb111_row - ROW_BEG;
+    row = (row < 0) ? 16 - row - ROW_BEG : row; 
+    dma_channel_transfer_from_buffer_now(DMA_CHANNEL_RGB111_DATA, &hub75_rgb111_buffer0_p[row * hub75_rgb111_columns], hub75_rgb111_columns);
     /* Temp end */
     
     /* Normal */
-    dma_channel_transfer_from_buffer_now(DMA_CHANNEL_RGB111_DATA, &hub75_rgb111_buffer0_p[hub75_rgb111_row * hub75_rgb111_columns], hub75_rgb111_columns);
+    // dma_channel_transfer_from_buffer_now(DMA_CHANNEL_RGB111_DATA, &hub75_rgb111_buffer0_p[hub75_rgb111_row * hub75_rgb111_columns], hub75_rgb111_columns);
 
     // Row 
     hub75_rgb111_row++;
-    if (hub75_rgb111_row >= hub75_rgb111_rows_half){
-        hub75_rgb111_row = 0;
+    if (hub75_rgb111_row >= hub75_rgb111_rows_half + ROW_BEG){
+        hub75_rgb111_row = ROW_BEG;
     }
 }
