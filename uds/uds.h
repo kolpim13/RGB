@@ -14,6 +14,24 @@
 #include "uds_types.h"
 #include "uds_2e.h"
 
+#define UDS_BUF_IN_OUT_LEN      2048 
+
+typedef struct{
+    uint32_t in_b : 1;
+    uint32_t out_b : 1;
+    uint32_t busy : 1;
+    uint32_t busy_image : 1;
+}UDS_State;
+
+extern UDS_State UDS_state;
+
+uint8_t* uds_in_get(void);
+uint8_t* uds_out_get(void);
+
+uint16_t uds_inLen_get(void);
+void uds_inLen_set(uint16_t value);
+
+uint16_t uds_outLen_get(void);
+void uds_outLen_set(uint16_t value);
+
 void UDS_Manage(void);
-UDS_State_e UDS_Process(uint8_t* mes_pa, uint32_t len);
-UDS_State_e UDS_SID_Execute(UDS_SID_e sid, uint8_t* mes_pa, uint32_t len_u32, UDS_Response_Codes_e* response);

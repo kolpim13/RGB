@@ -2,45 +2,39 @@
 #include "hub75.h"
 #include <string.h>
 
-UDS_State_e UDS_0x2E_Execute(UDS_0x2E_Identidiers identifier, uint8_t* data_pa, uint32_t count_u32, UDS_Response_Codes_e* errorCode){
-    UDS_State_e state = UDS_State_OK;
-    
-    switch(identifier){
-        /* 
-        TODO: Add check about size of written data and corresponding error code. 
-        */
-        case Write_To_Memory_RGB111:{
-            uint8_t* rgb111_pa = hub75_rgb111_get_buffer();
-            memcpy(rgb111_pa, data_pa, count_u32);
+static void UDS_0x2E_WriteToRGB111Buffer0(uint8_t* data_pa, uint16_t count_u16, UDS_Response_Codes_e* errorCode);
 
-            state = UDS_State_OK;
+void UDS_0x2E_Execute(UDS_0x2E_Identidiers identifier, uint8_t* data_pa, uint16_t count_u16, UDS_Response_Codes_e* errorCode){
+    switch(identifier){
+        case Write_To_Memory_RGB111:{
+            UDS_0x2E_WriteToRGB111Buffer0(data_pa, count_u16, errorCode);
             break;
         }
         default:{
-            *errorCode = Request_Out_Of_Range;
-            state = UDS_State_Error;
+            *errorCode = UDS_Request_Out_Of_Range;
             break;
         }
     }
-
-    if (state == UDS_State_OK){
-        *errorCode = Positive_Response;
-    }
-    return state;
 }
 
-uint32_t UDS_0x2E_Response(UDS_0x2E_Identidiers identifier, UDS_Response_Codes_e errorCode, uint8_t* response_pa){
-    if (errorCode == Positive_Response){
-        response_pa[UDS_SID_POS] = 0x6E;
-        response_pa[UDS_2E_IDENT_POS] = (uint8_t)identifier;
-        response_pa[UDS_2E_IDENT_POS + 1] = (uint8_t)(identifier >> 8);
-        return 3;
+/* 
+ * Copy data from UDS directly to the matrix buffer0
+ ToDo: Check length of the data transfered, to check if data will fit the buffer
+ ToDo: Transfer offset and other calculations to here
+*/
+static void UDS_0x2E_WriteToRGB111Buffer0(uint8_t* data_pa, uint16_t count_u16, UDS_Response_Codes_e* errorCode){
+    uint16_t block_len = (uint16_t)((uint16_t)(data_pa[USD_2E_BLOCKLEN_POS_H] << 8) | (uint16_t)data_pa[USD_2E_BLOCKLEN_POS_L]);
+    uint16_t block_num = (uint16_t)((uint16_t)(data_pa[USD_2E_BLOCKNUM_POS_H] << 8) | (uint16_t)data_pa[USD_2E_BLOCKNUM_POS_L]);
+
+    if (UDS_2E_DATA_POS > count_u16){
+        *errorCode = UDS_General_Error;
+        return;
     }
-    else{
-        response_pa[UDS_SID_POS] = 0x7F;
-        response_pa[UDS_2E_IDENT_POS] = (uint8_t)identifier;
-        response_pa[UDS_2E_IDENT_POS + 1] = (uint8_t)(identifier >> 8);
-        response_pa[UDS_2E_ERROR_POS] = errorCode;
-        return 4;
-    }
+
+    uint8_t* rgb111_pa = hub75_rgb111_get_buffer();
+    count_u16 = count_u16 - UDS_2E_DATA_POS;
+    data_pa = &data_pa[UDS_2E_DATA_POS];
+    
+    memcpy(rgb111_pa, data_pa, count_u16);
+    errorCode = UDS_Positive_Response;
 }

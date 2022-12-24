@@ -2,7 +2,7 @@
 #include "colorRGB111.h"
 #include "hub75_rgb111.pio.h"
 
-static PIO hub75_rgb111_pio = pio0;
+static volatile PIO hub75_rgb111_pio = pio0;
 static volatile uint hub75_rgb111_sm_data = 0;
 static volatile uint hub75_rgb111_sm_row = 0;
 static volatile uint hub75_rgb111_offset_data = 0;

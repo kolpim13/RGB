@@ -9,7 +9,8 @@
         "uds_2e.h": "c",
         "ctype.h": "c",
         "board.h": "c",
-        "cdc_device.h": "c"
+        "cdc_device.h": "c",
+        "uds_types.h": "c"
     },
 
     // These settings tweaks to the cmake plugin will ensure

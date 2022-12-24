@@ -39,6 +39,7 @@ target_sources(RGB
         ${CMAKE_CURRENT_SOURCE_DIR}/uds/uds.c
         ${CMAKE_CURRENT_SOURCE_DIR}/uds/uds_2e.c
         ${CMAKE_CURRENT_SOURCE_DIR}/usb/usb_descriptors.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/usb/usb_user.c
 )
 
 # For pio programs
