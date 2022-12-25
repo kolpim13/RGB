@@ -27,6 +27,7 @@ target_include_directories(RGB
         uart
         uds
         usb
+        RIO
 )
 
 # Add sources
@@ -40,6 +41,7 @@ target_sources(RGB
         ${CMAKE_CURRENT_SOURCE_DIR}/uds/uds_2e.c
         ${CMAKE_CURRENT_SOURCE_DIR}/usb/usb_descriptors.c
         ${CMAKE_CURRENT_SOURCE_DIR}/usb/usb_user.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/RIO/RIO_BASE.c
 )
 
 # For pio programs
