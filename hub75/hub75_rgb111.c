@@ -67,6 +67,10 @@ uint8_t* hub75_rgb111_get_buffer(void){
     return hub75_rgb111_buffer0_p;
 }
 
+uint16_t hub75_rgb111_width_get(void){ return hub75_rgb111_columns; }
+uint16_t hub75_rgb111_height_get(void){ return hub75_rgb111_rows; }
+uint16_t hub75_rgb111_height_half_get(void){ return hub75_rgb111_rows_half; }
+
 void hub75_rgb111_data_dma_handler(void){
     #define ROW_BEG 4
 

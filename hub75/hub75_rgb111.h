@@ -12,4 +12,9 @@
 void hub75_rgb111_init(PIO pio, uint sm_data, uint sm_row, uint pin_color, uint pin_sckl, uint pin_row, uint pin_latch, float freq);
 void hub75_rgb111_set_buffer(uint8_t *buf_pa, uint number);
 uint8_t* hub75_rgb111_get_buffer(void);
+
+uint16_t hub75_rgb111_width_get(void);
+uint16_t hub75_rgb111_height_get(void);
+uint16_t hub75_rgb111_height_half_get(void);
+
 void hub75_rgb111_data_dma_handler(void);

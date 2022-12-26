@@ -15,6 +15,7 @@ static const uint16_t image_blockSize = 512u;
 UDS_State UDS_state = { 0 };
 
 static void UDS_SID_Execute(UDS_SID_e sid, uint8_t* data_pa, uint16_t len_u16, UDS_Response_Codes_e* errorCode);
+static void UDS_SID_Response(UDS_SID_e sid, UDS_Response_Codes_e errorCode);
 
 __attribute__ ((always_inline)) inline uint8_t* uds_in_get(void){ return &bufferIn_a[0]; }
 __attribute__ ((always_inline)) inline uint8_t* uds_out_get(void){ return &bufferOut_a[0]; }
@@ -35,6 +36,7 @@ void UDS_Manage(void){
     /* Process given mes */
     UDS_SID_e sid = (UDS_SID_e)bufferIn_a[UDS_SID_POS];
     UDS_SID_Execute(sid, bufferIn_a, bufferInLen_u16, &response);
+    UDS_SID_Response(sid, response);
 
     UDS_state.in_b = false;
     UDS_state.out_b = true;
@@ -49,6 +51,25 @@ static void UDS_SID_Execute(UDS_SID_e sid, uint8_t* data_pa, uint16_t len_u16, U
         }
         default:{
             *errorCode = UDS_Service_Not_Supported;
+            break;
+        }
+    }
+}
+
+static void UDS_SID_Response(UDS_SID_e sid, UDS_Response_Codes_e errorCode){
+    switch(errorCode){
+        case UDS_Positive_Response:{
+            bufferIn_a[UDS_SID_POS] = bufferOut_a[UDS_SID_POS] + 0x40;
+            bufferOutLen_u16 = 1;
+            // Distincts depend on concrete UDS service used (For positive response only)
+            break;
+        }
+        default:{
+            // For negative response the pattern is the same
+            bufferIn_a[UDS_NEGATIVE_RESPONSE_SID_POS] = UDS_NEGATIVE_RESPONSE_SID;
+            bufferIn_a[UDS_REJECTED_SID_POS] = sid;
+            bufferIn_a[UDS_NEGATIVE_RESPONSE_CODE_POS] = errorCode;
+            bufferOutLen_u16 = 3;
             break;
         }
     }

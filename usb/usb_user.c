@@ -11,7 +11,9 @@ void usb_task(void){
 
 static void cdc_task(void){
     /* Get data from cdc 0. [to UDS module] */
-    if (tud_cdc_n_available(TUD_UDS)){
+    if (UDS_state.in_b == false
+        && tud_cdc_n_available(TUD_UDS))
+    {
         uint8_t* buf_ap = uds_in_get();
 
         uint16_t count = tud_cdc_n_read(TUD_UDS, buf_ap, UDS_BUF_IN_OUT_LEN);

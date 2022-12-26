@@ -2,8 +2,12 @@
 
 #include "pico/stdlib.h"
 
-#define UDS_SID_POS    0U
-#define UDS_ERROR_POS  1U
+#define UDS_SID_POS                     0U
+#define UDS_NEGATIVE_RESPONSE_SID_POS   0U
+#define UDS_REJECTED_SID_POS            1U
+#define UDS_NEGATIVE_RESPONSE_CODE_POS  2U
+
+#define UDS_NEGATIVE_RESPONSE_SID       0x7FU
 
 typedef enum _UDS_SID_e{
     Read_Data_By_Identifier = 0x22,
