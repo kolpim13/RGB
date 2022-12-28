@@ -17,4 +17,4 @@ uint16_t hub75_rgb111_width_get(void);
 uint16_t hub75_rgb111_height_get(void);
 uint16_t hub75_rgb111_height_half_get(void);
 
-void hub75_rgb111_data_dma_handler(void);
+extern void (*hub75_rgb111_dma_handler)(void);

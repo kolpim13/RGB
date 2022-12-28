@@ -20,7 +20,7 @@ static void IRQ_Handler_DMA_0(void){
 
     ///hub75_rgb555_data_dma_handler();
     if (ints0 & (1U << DMA_CHANNEL_RGB111_DATA)){
-        hub75_rgb111_data_dma_handler();
+        hub75_rgb111_dma_handler();
     }
 
     if (ints0 & (1U << DMA_CHANEL_UART0_TX)){
