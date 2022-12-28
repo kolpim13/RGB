@@ -15,7 +15,7 @@ static volatile uint8_t* hub75_rgb111_buffer0_p;
 static volatile uint8_t* hub75_rgb111_buffer1_p;
 static volatile size_t hub75_rgb111_activeBuffer = 0;
 
-static volatile uint32_t hub75_rgb111_row = UINT32_MAX;
+static volatile uint32_t hub75_rgb111_row = 0;
 
 void (*hub75_rgb111_dma_handler)(void) = NULL;
 static void hub75_rgb111_image_dma_handler(void);
@@ -67,6 +67,8 @@ void hub75_rgb111_init(PIO pio, uint sm_data, uint sm_row, uint pin_color, uint 
     hub75_rgb111_dma_handler = hub75_rgb111_image_dma_handler;
 
      // Enable channel for rgb111 interruption for DMA IRQ 0
+    // dma_channel_set_irq0_enabled(DMA_CHANNEL_RGB111_DATA, true);
+    dma_channel_set_irq0_enabled(DMA_CHANNEL_RGB111_ROW, true);
     // dma_channel_set_irq0_enabled(DMA_CHANNEL_RGB111_DATA, true);
     dma_channel_set_irq0_enabled(DMA_CHANNEL_RGB111_ROW, true);
 
